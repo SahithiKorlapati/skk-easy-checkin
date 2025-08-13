@@ -5,15 +5,18 @@ services:
     build: .
     ports:
       - "5000:5000"
+    # Use a different directory to avoid Windows Docker issues
     volumes:
-      - ./database:/app/database
+      - .:/code
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=production
       - SECRET_KEY=change_this_in_production
-      - DATABASE_URL=sqlite:///database/checkin.db
+      - DATABASE_URL=sqlite:////app/instance/attendance.db
+    # Run as root to avoid permission issues
+    user: "root"
+    command: gunicorn --bind 0.0.0.0:5000 --workers 1 run:app
     restart: unless-stopped
-    command: gunicorn --bind 0.0.0.0:5000 --workers 2 run:app
 
   # Uncomment the following section if you want to use PostgreSQL instead of SQLite
   # db:
@@ -33,6 +36,4 @@ services:
   #   - SECRET_KEY=change_this_in_production
   #   - DATABASE_URL=postgresql://postgres:postgres@db:5432/attendance
 
-# Uncomment if using PostgreSQL
-# volumes:
-#   postgres_data:
+# Using a bind mount for the entire app directory

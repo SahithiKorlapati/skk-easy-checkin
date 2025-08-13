@@ -6,3 +6,4 @@ Werkzeug==2.3.7
 SQLAlchemy==2.0.20
 python-dotenv==1.0.0
 gunicorn==21.2.0
+openai==0.28.0

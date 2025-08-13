@@ -3,20 +3,28 @@
 # Start development server for Easy CheckIn
 echo "Starting Easy CheckIn in development mode..."
 
-# Create database directory if it doesn't exist
-mkdir -p database
-
 # Set environment variables
 export FLASK_APP=run.py
 export FLASK_ENV=development
 
+# Use a consistent database path
+export DATABASE_URL="sqlite:///$(pwd)/instance/attendance.db"
+
+# Create instance directory with proper permissions
+mkdir -p instance
+chmod 777 instance
+
 # Check if virtual environment exists
-echo "Creating virtual environment..."
-python3.12 -m venv venv
-source venv/bin/activate
-echo "Installing dependencies..."
-pip install -r requirements.txt
-# python reset_db.py
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv venv
+    source venv/bin/activate
+    echo "Installing dependencies..."
+    pip install --upgrade pip
+    pip install -r requirements.txt
+else
+    source venv/bin/activate
+fi
 # Check if reset flag is provided
 if [ "$1" == "--reset-db" ]; then
     echo "Resetting database..."
@@ -35,8 +43,15 @@ def reset_database():
     app = create_app()
     
     with app.app_context():
-        # Get the database path
-        db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+        # Get the database path from environment or config
+        db_uri = os.environ.get('DATABASE_URL') or app.config.get('SQLALCHEMY_DATABASE_URI')
+        if db_uri.startswith('sqlite:///'):
+            db_path = db_uri.replace('sqlite:///', '')
+        else:
+            db_path = db_uri.replace('sqlite://', '')
+        
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         
         # Check if the database file exists
         if os.path.exists(db_path):
