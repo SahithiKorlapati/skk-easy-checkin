@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Dance Class Attendance{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .welcome-section {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    @media (max-width: 768px) {
+        .welcome-section h1 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Welcome to the Dashboard!</h1>
+    <p class="lead">
+        Manage your classes, students, and attendance records
+    </p>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+    <div class="col">
+        <div class="card dashboard-card text-center">
+            <div class="card-body">
+                <div class="card-icon text-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5 class="card-title">Students</h5>
+                <a href="{{ url_for('admin.students') }}" class="btn btn-outline-primary">Manage Students</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col">
+        <div class="card dashboard-card text-center">
+            <div class="card-body">
+                <div class="card-icon text-success">
+                    <i class="fas fa-music"></i>
+                </div>
+                <h5 class="card-title">Classes</h5>
+                <a href="{{ url_for('admin.classes') }}" class="btn btn-outline-success">Manage Classes</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col">
+        <div class="card dashboard-card text-center">
+            <div class="card-body">
+                <div class="card-icon text-info">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h5 class="card-title">Reports</h5>
+                <a href="{{ url_for('admin.attendance_report') }}" class="btn btn-outline-info">View Reports</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col">
+        <div class="card dashboard-card text-center">
+            <div class="card-body">
+                <div class="card-icon text-warning">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h5 class="card-title">Kiosk Mode</h5>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-warning">Open Kiosk</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Your Classes</h2>
+
+{% if classes %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Class Name</th>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in classes %}
+                    <tr>
+                        <td>{{ class.name }}</td>
+                        <td>{{ class.day_of_week }}</td>
+                        <td>{{ class.start_time.strftime('%I:%M %p') }} - {{ class.end_time.strftime('%I:%M %p') }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.attendance_report', class_id=class.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-chart-bar"></i> Attendance
+                            </a>
+                            {% if class.day_of_week == today.strftime('%A') %}
+                                <a href="{{ url_for('main.kiosk', class_id=class.id) }}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-clipboard-check"></i> Kiosk
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <h4 class="alert-heading">No Classes Found</h4>
+        <p>You don't have any classes assigned to you yet.</p>
+        <a href="{{ url_for('admin.new_class') }}" class="btn btn-primary">Create New Class</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,232 @@
+/* Custom CSS for Dance Attendance Application */
+
+/* General Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+}
+
+footer {
+    margin-top: auto;
+    padding: 1rem 0;
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+/* Card Styles */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+/* Kiosk Mode Styles */
+.kiosk-container {
+    max-width: 100%;
+    padding: 0;
+}
+
+.kiosk-header {
+    background-color: #343a40;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0;
+}
+
+.student-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+.student-card.checked-in {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.check-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #28a745;
+    font-size: 1.5rem;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.5s ease;
+}
+
+.student-card.checked-in .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Search Box Styles */
+.search-container {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 1rem;
+}
+
+/* Dashboard Styles */
+.dashboard-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.dashboard-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #007bff;
+}
+
+/* Form Styles */
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Table Styles */
+.table-responsive {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #343a40;
+    color: white;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .dashboard-card {
+        padding: 1rem;
+    }
+    
+    .dashboard-icon {
+        font-size: 2rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+}
+
+/* Tablet-specific Styles */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .student-card {
+        min-height: 150px;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+    }
+}
+
+/* Fullscreen Mode */
+.fullscreen-enabled {
+    background-color: #f8f9fa;
+}
+
+/* Animation for attendance marking */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.student-card.checked-in {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* Report Styles */
+.report-filters {
+    background-color: #e9ecef;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.date-range-buttons .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Login Page Styles */
+.login-container {
+    max-width: 400px;
+    margin: 2rem auto;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-logo h1 {
+    font-weight: 700;
+    color: #343a40;
+}
+
+/* Attendance Status Indicators */
+.attendance-present {
+    color: #28a745;
+}
+
+.attendance-absent {
+    color: #dc3545;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .container {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+    
+    .table {
+        width: 100% !important;
+    }
+}

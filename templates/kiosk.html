@@ -1,0 +1,681 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Kiosk - {{ dance_class.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+    .student-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .student-card.checked-in {
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+    }
+    .student-card.checked-in .card-header {
+        background-color: #198754;
+    }
+    .search-container {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background-color: white;
+        padding: 15px 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .kiosk-header {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+    }
+    .check-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+        color: #198754;
+    }
+    @media (max-width: 768px) {
+        .kiosk-header h1 {
+            font-size: 1.8rem;
+        }
+    }
+    /* Full-screen mode for tablet kiosk */
+    .fullscreen-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    /* Enhanced search styles */
+    #searchResults {
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-radius: 0.25rem;
+    }
+    #searchResults .list-group-item {
+        transition: all 0.2s ease;
+    }
+    #searchResults .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    #searchPrompt {
+        padding: 3rem 0;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    #recentCheckins {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+    }
+    .search-animation {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kiosk-header text-center">
+    <h1>{{ dance_class.name }}</h1>
+    <p class="lead">{{ today.strftime('%A, %B %d, %Y') }}</p>
+    <p>
+        <strong>Instructor:</strong> {{ dance_class.instructor_name }} | 
+        <strong>Time:</strong> {{ dance_class.start_time.strftime('%I:%M %p') }} - {{ dance_class.end_time.strftime('%I:%M %p') }}
+    </p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Class Selection
+    </a>
+</div>
+
+<div class="search-container mb-4">
+    <div class="input-group input-group-lg">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+        <input type="text" id="studentSearch" class="form-control" placeholder="Type to filter students..." autocomplete="off">
+    </div>
+</div>
+
+<div id="studentListContainer" class="mt-2">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Student List</h5>
+            <span id="studentCount" class="badge bg-light text-dark">0 students</span>
+            <button id="batchCheckInBtn" class="btn btn-sm btn-success">Batch Check-in</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th width="40px">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                                </div>
+                            </th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentListTable">
+                        <tr id="loadingRow">
+                            <td colspan="4" class="text-center p-3">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Loading students...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="recentCheckins" class="mt-4">
+    <h4 class="mb-3">Recent Check-ins</h4>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="recentGrid">
+        <!-- Recent check-ins will appear here -->
+    </div>
+</div>
+
+<!-- Template for student card -->
+<template id="studentCardTemplate">
+    <div class="col student-item">
+        <div class="card student-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0 student-name"></h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.mark_attendance') }}" method="post" class="attendance-form">
+                    <input type="hidden" name="student_id" class="student-id-input">
+                    <input type="hidden" name="class_id" value="{{ dance_class.id }}">
+                    <button type="submit" class="btn btn-primary w-100 check-in-btn">
+                        <i class="fas fa-clipboard-check me-2"></i>Check In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+</div>
+
+<button id="fullscreenBtn" class="btn btn-primary btn-lg fullscreen-btn">
+    <i class="fas fa-expand me-2"></i>Fullscreen Mode
+</button>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        const searchInput = $("#studentSearch");
+        const studentListTable = $("#studentListTable");
+        const studentCount = $("#studentCount");
+        const recentGrid = $("#recentGrid");
+        const classId = "{{ dance_class.id }}";
+        let allStudents = [];
+        let filteredStudents = [];
+        let recentCheckins = [];
+        
+        // Load all students on page load
+        loadAllStudents();
+        
+        // Function to load all students
+        function loadAllStudents() {
+            $.getJSON(`/search_students?query=&class_id=${classId}`, function(data) {
+                // Store all students
+                allStudents = data.students;
+                filteredStudents = [...allStudents];
+                
+                // Update the count
+                updateStudentCount(filteredStudents.length);
+                
+                // Remove loading row
+                $("#loadingRow").remove();
+                
+                // Display all students
+                displayStudents(allStudents);
+                
+                // Check for already checked-in students and add them to recent check-ins
+                const checkedInStudents = allStudents.filter(student => student.checked_in);
+                checkedInStudents.forEach(student => {
+                    recentCheckins.unshift(student);
+                });
+                
+                // Limit to 6 most recent
+                if (recentCheckins.length > 6) {
+                    recentCheckins = recentCheckins.slice(0, 6);
+                }
+                
+                // Update recent check-ins display
+                updateRecentGrid();
+            }).fail(function() {
+                studentListTable.html(
+                    '<tr><td colspan="3" class="text-center p-3 text-danger">Error loading students. Please refresh the page.</td></tr>'
+                );
+            });
+        }
+        
+        // Filter students as user types
+        searchInput.on("keyup", function() {
+            const query = $(this).val().trim().toLowerCase();
+            
+            if (query === "") {
+                // Show all students if query is empty
+                filteredStudents = [...allStudents];
+            } else {
+                // Filter students based on name
+                filteredStudents = allStudents.filter(student => 
+                    student.name.toLowerCase().includes(query)
+                );
+            }
+            
+            // Update the count
+            updateStudentCount();
+            
+            // Display filtered students
+            displayStudents(filteredStudents);
+        });
+        
+        // Function to display students in the table
+        function displayStudents(students) {
+            // Clear the table
+            studentListTable.empty();
+            
+            // Check if there are students to display
+            if (students.length === 0) {
+                studentListTable.html('<tr><td colspan="4" class="text-center p-3">No students found</td></tr>');
+                updateStudentCount(0);
+                return;
+            }
+            
+            // Update student count
+            updateStudentCount(students.length);
+            
+            // Add each student to the table
+            students.forEach(student => {
+                const row = $('<tr></tr>');
+                
+                // Add checkbox cell
+                const checkboxCell = $(`<td>
+                    <div class="form-check">
+                        <input class="form-check-input student-checkbox" type="checkbox" 
+                            value="${student.id}" 
+                            data-student-name="${student.name}" 
+                            ${student.checked_in ? 'disabled' : ''}>
+                    </div>
+                </td>`);
+                
+                const nameCell = $(`<td>${student.name}</td>`);
+                let statusCell, actionCell;
+                
+                if (student.checked_in) {
+                    statusCell = $(`<td><span class="badge bg-success"><i class="fas fa-check me-1"></i>Already Checked In</span></td>`);
+                    actionCell = $(`<td>
+                        <button class="btn btn-sm btn-danger uncheck-in-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                            <i class="fas fa-times-circle me-1"></i>Un-check In
+                        </button>
+                    </td>`);
+                } else {
+                    statusCell = $(`<td><span class="badge bg-primary">Not Checked In</span></td>`);
+                    actionCell = $(`<td>
+                        <button class="btn btn-sm btn-success check-in-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                            <i class="fas fa-check-circle me-1"></i>Check In
+                        </button>
+                    </td>`);
+                }
+                
+                row.append(checkboxCell);
+                row.append(nameCell);
+                row.append(statusCell);
+                row.append(actionCell);
+                studentListTable.append(row);
+            });
+            
+            // Add click handler for check-in buttons
+            $(".check-in-btn").off('click').on('click', function() {
+                const studentId = $(this).data("student-id");
+                const studentName = $(this).data("student-name");
+                showConfirmation({
+                    id: studentId,
+                    name: studentName
+                });
+            });
+            
+            // Add click handler for un-check-in buttons
+            $(".uncheck-in-btn").off('click').on('click', function() {
+                const studentId = $(this).data("student-id");
+                const studentName = $(this).data("student-name");
+                showUncheckConfirmation({
+                    id: studentId,
+                    name: studentName
+                });
+            });
+            
+            // Setup select all checkbox
+            $("#selectAllCheckbox").off('change').on('change', function() {
+                $(".student-checkbox:not(:disabled)").prop('checked', $(this).is(':checked'));
+                updateBatchCheckInButton();
+            });
+            
+            // Setup individual checkboxes
+            $(".student-checkbox").off('change').on('change', function() {
+                updateBatchCheckInButton();
+                // If any checkbox is unchecked, uncheck the "select all" checkbox
+                if (!$(this).is(':checked')) {
+                    $("#selectAllCheckbox").prop('checked', false);
+                }
+                // If all checkboxes are checked, check the "select all" checkbox
+                else if ($(".student-checkbox:not(:disabled):not(:checked)").length === 0) {
+                    $("#selectAllCheckbox").prop('checked', true);
+                }
+            });
+            
+            // Initial update of batch check-in button
+            updateBatchCheckInButton();
+        }
+        
+        // Function to update student count
+        function updateStudentCount(count) {
+            // Calculate how many students are checked in
+            const checkedInCount = allStudents.filter(student => student.checked_in).length;
+            $('#studentCount').text(`${checkedInCount}/${count} student${count !== 1 ? 's' : ''}`);
+        }
+        
+        // Function to update batch check-in button state
+        function updateBatchCheckInButton() {
+            const checkedCount = $(".student-checkbox:checked").length;
+            const $batchBtn = $("#batchCheckInBtn");
+            
+            if (checkedCount > 0) {
+                $batchBtn.removeClass('btn-outline-success').addClass('btn-success');
+                $batchBtn.html(`<i class="fas fa-users me-1"></i>Check In ${checkedCount} Students`);
+                $batchBtn.prop('disabled', false);
+            } else {
+                $batchBtn.removeClass('btn-success').addClass('btn-outline-success');
+                $batchBtn.html(`<i class="fas fa-users me-1"></i>Batch Check-In`);
+                $batchBtn.prop('disabled', true);
+            }
+        }
+        
+        // Create modals if they don't exist
+        if ($('#confirmationModal').length === 0) {
+            $('body').append(`
+                <!-- Check-In Confirmation Modal -->
+                <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="confirmationModalLabel">Confirm Check-In</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="mb-0">Are you sure you want to check in <strong id="confirmStudentName"></strong>?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="confirmCheckInBtn">Confirm Check-In</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
+        if ($('#uncheckConfirmationModal').length === 0) {
+            $('body').append(`
+                <!-- Un-check-In Confirmation Modal -->
+                <div class="modal fade" id="uncheckConfirmationModal" tabindex="-1" aria-labelledby="uncheckConfirmationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="uncheckConfirmationModalLabel">Confirm Un-check In</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="mb-0">Are you sure you want to remove the check-in for <strong id="uncheckStudentName"></strong>?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirmUncheckBtn">Confirm Un-check In</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
+        if ($('#batchConfirmationModal').length === 0) {
+            $('body').append(`
+                <!-- Batch Check-In Confirmation Modal -->
+                <div class="modal fade" id="batchConfirmationModal" tabindex="-1" aria-labelledby="batchConfirmationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="batchConfirmationModalLabel">Confirm Multiple Check-Ins</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to check in the following students?</p>
+                                <div class="alert alert-info">
+                                    <ul id="batchStudentList" class="mb-0"></ul>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="confirmBatchCheckInBtn">
+                                    <i class="fas fa-users me-1"></i>Confirm Check-In
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
+        // Function to show confirmation modal
+        function showConfirmation(student) {
+            
+            // Update modal content
+            $('#confirmStudentName').text(student.name);
+            
+            // Set up confirm button action
+            $('#confirmCheckInBtn').off('click').on('click', function() {
+                // Hide modal
+                $('#confirmationModal').modal('hide');
+                
+                // Check in student
+                checkInStudent(student);
+            });
+            
+            // Show modal
+            $('#confirmationModal').modal('show');
+        }
+        
+        // Function to show un-check confirmation modal
+        function showUncheckConfirmation(student) {
+            // Update modal content
+            $('#uncheckStudentName').text(student.name);
+            
+            // Set up confirm button action
+            $('#confirmUncheckBtn').off('click').on('click', function() {
+                // Hide modal
+                $('#uncheckConfirmationModal').modal('hide');
+                
+                // Un-check in student
+                uncheckInStudent(student);
+            });
+            
+            // Show modal
+            $('#uncheckConfirmationModal').modal('show');
+        }
+        
+        // Function to check in a student
+        function checkInStudent(student) {
+            // Create a form and submit it
+            const form = $('<form action="/mark_attendance" method="post"></form>');
+            form.append(`<input type="hidden" name="student_id" value="${student.id}">`);
+            form.append(`<input type="hidden" name="class_id" value="${classId}">`);
+            
+            // Show loading state
+            studentListTable.html(
+                '<tr><td colspan="3" class="text-center p-3"><i class="fas fa-spinner fa-spin me-2"></i>Checking in...</td></tr>'
+            );
+            
+            // Append to body and submit
+            $('body').append(form);
+            form.submit();
+            
+            // Add to recent check-ins
+            addToRecentCheckins(student);
+        }
+        
+        // Function to un-check in a student
+        function uncheckInStudent(student) {
+            // Create a form and submit it
+            const form = $('<form action="/uncheck_attendance" method="post"></form>');
+            form.append(`<input type="hidden" name="student_id" value="${student.id}">`);
+            form.append(`<input type="hidden" name="class_id" value="${classId}">`);
+            
+            // Show loading state
+            studentListTable.html(
+                '<tr><td colspan="3" class="text-center p-3"><i class="fas fa-spinner fa-spin me-2"></i>Removing check-in...</td></tr>'
+            );
+            
+            // Append to body and submit
+            $('body').append(form);
+            form.submit();
+        }
+        
+        // Function to add a student to recent check-ins
+        function addToRecentCheckins(student) {
+            // Create a new student card from template
+            const template = document.getElementById('studentCardTemplate');
+            const clone = document.importNode(template.content, true);
+            
+            // Update the card with student info
+            clone.querySelector('.student-name').textContent = student.name;
+            clone.querySelector('.student-id-input').value = student.id;
+            
+            // Add to recent check-ins array and update display
+            recentCheckins.unshift(student);
+            if (recentCheckins.length > 6) {
+                recentCheckins.pop(); // Keep only the 6 most recent
+            }
+            
+            // Update the recent grid
+            updateRecentGrid();
+        }
+        
+        // Function to update the recent check-ins grid
+        function updateRecentGrid() {
+            recentGrid.empty();
+            
+            if (recentCheckins.length === 0) {
+                recentGrid.html('<div class="col-12 text-center text-muted">No recent check-ins</div>');
+                return;
+            }
+            
+            recentCheckins.forEach(function(student) {
+                // Create a new student card from template
+                const template = document.getElementById('studentCardTemplate');
+                const clone = document.importNode(template.content, true);
+                
+                // Update the card with student info
+                clone.querySelector('.student-name').textContent = student.name;
+                clone.querySelector('.student-id-input').value = student.id;
+                
+                // Append to the grid
+                recentGrid.append(clone);
+            });
+        }
+        
+        // Initialize recent check-ins
+        updateRecentGrid();
+
+        // Fullscreen mode for kiosk
+        $("#fullscreenBtn").click(function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable fullscreen mode: ${err.message}`);
+                });
+                $(this).html('<i class="fas fa-compress me-2"></i>Exit Fullscreen');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    $(this).html('<i class="fas fa-expand me-2"></i>Fullscreen Mode');
+                }
+            }
+        });
+
+        // Handle fullscreen change
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                $("#fullscreenBtn").html('<i class="fas fa-expand me-2"></i>Fullscreen Mode');
+            }
+        });
+        
+        // Function to show batch confirmation modal
+        function showBatchConfirmation() {
+            // Get all checked students
+            const checkedStudents = [];
+            $(".student-checkbox:checked").each(function() {
+                checkedStudents.push({
+                    id: $(this).val(),
+                    name: $(this).data("student-name")
+                });
+            });
+            
+            if (checkedStudents.length === 0) {
+                return;
+            }
+            
+            // Clear and populate the student list
+            $("#batchStudentList").empty();
+            checkedStudents.forEach(student => {
+                $("#batchStudentList").append(`<li>${student.name}</li>`);
+            });
+            
+            // Store the student IDs for processing
+            $("#confirmBatchCheckInBtn").data("student-ids", checkedStudents.map(s => s.id));
+            
+            // Show the modal
+            const batchModal = new bootstrap.Modal(document.getElementById('batchConfirmationModal'));
+            batchModal.show();
+        }
+        
+        // Function to process batch check-in
+        function processBatchCheckIn(studentIds) {
+            $.ajax({
+                url: '/mark_attendance_batch',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    student_ids: studentIds,
+                    class_id: classId
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        // Hide the modal
+                        bootstrap.Modal.getInstance(document.getElementById('batchConfirmationModal')).hide();
+                        
+                        // Add the students to recent check-ins
+                        response.students.forEach(student => {
+                            // Add to recent check-ins
+                            recentCheckins.unshift(student);
+                            
+                            // Limit to 6 most recent
+                            if (recentCheckins.length > 6) {
+                                recentCheckins.pop();
+                            }
+                            
+                            // Update the student in the allStudents array
+                            const index = allStudents.findIndex(s => s.id === student.id);
+                            if (index !== -1) {
+                                allStudents[index].checked_in = true;
+                            }
+                        });
+                        
+                        // Update the grid
+                        updateRecentGrid();
+                        
+                        // Refresh the student list
+                        displayStudents(filteredStudents);
+                        
+                        // Show success message
+                        showAlert('success', `Successfully checked in ${response.students.length} students!`);
+                    } else {
+                        showAlert('danger', 'Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    showAlert('danger', 'Error: Could not process batch check-in. Please try again.');
+                }
+            });
+        }
+        
+        // Set up batch check-in button
+        $("#batchCheckInBtn").on("click", function() {
+            showBatchConfirmation();
+        });
+        
+        // Set up batch check-in confirmation button
+        $(document).on("click", "#confirmBatchCheckInBtn", function() {
+            const studentIds = $(this).data("student-ids");
+            processBatchCheckIn(studentIds);
+        });
+    });
+</script>
+{% endblock %}
