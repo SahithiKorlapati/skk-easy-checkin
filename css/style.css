@@ -1,0 +1,334 @@
+/* General Body Styles */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    color: #333;
+}
+
+/* Header Styles */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+header .logo a {
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+header nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+header nav ul li {
+    margin-left: 20px;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Hero Section Styles */
+.hero {
+    --hero-bg-image: url('https://via.placeholder.com/1500x800'); /* Easy to change background */
+    background-image: var(--hero-bg-image);
+    background-size: cover;
+    background-position: center;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+}
+
+.hero-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.cta-button {
+    background-color: #d9a266; /* A color from the original site */
+    color: white;
+    padding: 15px 30px;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #c89156;
+}
+
+/* About Section Styles */
+.about-section {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.about-section h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.about-section h3 {
+    font-size: 24px;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* News & Events Section Styles */
+.news-events-section {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.news-events-section h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.news-events-section h3 {
+    font-size: 24px;
+    color: #777;
+    margin-bottom: 50px;
+}
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.news-item {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: left;
+}
+
+.news-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.news-content {
+    padding: 20px;
+}
+
+.news-content .date {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.news-content h4 {
+    font-size: 20px;
+    margin: 0;
+}
+
+/* Footer Styles */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 80px 0;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.footer-col h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.footer-col h4 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.copyright {
+    text-align: center;
+    border-top: 1px solid #555;
+    padding-top: 30px;
+}
+
+/* Classes Section Styles */
+.classes-section {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.classes-section h2 {
+    font-size: 36px;
+    margin-bottom: 50px;
+}
+
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.class-item {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.class-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.class-item h3 {
+    font-size: 24px;
+    margin: 20px 0 10px;
+}
+
+.class-item p {
+    font-size: 14px;
+    color: #777;
+    padding: 0 20px 20px;
+}
+
+/* Testimonials Section Styles */
+.testimonials-section {
+    padding: 80px 0;
+    background-color: #f9f9f9;
+    text-align: center;
+}
+
+.testimonials-section h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.testimonials-section h3 {
+    font-size: 24px;
+    color: #777;
+    margin-bottom: 50px;
+}
+
+.testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.testimonial-item {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+.testimonial-item p {
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.testimonial-item h4 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.about-section p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.learn-more {
+    color: #d9a266;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 50px;
+}
+
+.stat h4 {
+    font-size: 36px;
+    margin: 0;
+}
+
+/* Director Section Styles */
+.director-section {
+    padding: 80px 0;
+    background-color: #f9f9f9;
+}
+
+.director-section .container {
+    display: flex;
+    align-items: center;
+}
+
+.director-image {
+    flex: 1;
+    padding-right: 50px;
+}
+
+.director-image img {
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+.director-info {
+    flex: 2;
+}
+
+.director-info h3 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.director-info h4 {
+    font-size: 18px;
+    color: #777;
+    margin-bottom: 20px;
+}
